@@ -15,14 +15,14 @@ connection.connect(function (err) {
     } else {
         console.log("Connection successfull");
     }
-    makeTable();
+    createTable();
 });
 
-var makeTable = function () {
+var createTable = function () {
     connection.query("SELECT * FROM products", function (err, res) {
-        for (var i = 0; i < res.length; i++) {
-            console.log(res[i].item_id + " || " + res[i].product_name + " || " +
-                res[i].department_name + " || " + res[i].price + " || " + res[i].stock_quantity + "\n");
+        for (var i = 0; i < res.length; i++) {            
+            console.log(res[i].item_id + " | " + res[i].product_name + " | " +
+                res[i].department_name + " | " + res[i].price + " | " + res[i].stock_quantity + "\n");
         }
         promptCustomer(res);
     })
@@ -32,12 +32,11 @@ var promptCustomer = function (res) {
     inquirer.prompt([{
         type: 'input',
         name: 'choice',
-        message: 'What would you like to buy? [Quit with Q]'
+        message: 'What would you like to buy?'
     }]).then(function (answer) {
-        var correct = false;
-        if (answer.choice.toUpperCase() == "Q") {
-            process.exit();
-        }
+
+        console.log("The customer would like to buy: " + answer.choice);
+
         for (var i = 0; i < res.length; i++) {
             if (res[i].product_name == answer.choice) {
                 correct = true;
@@ -55,13 +54,14 @@ var promptCustomer = function (res) {
                         }
                     }
                 }).then(function (answer) {
-                    if ((res[id].stock_quantity - answer.quant) > 0) {
+                    var remainingStock = res[id].stock_quantity - answer.quant;
+                    if (remainingStock > 0) {
                         connection.query("UPDATE products SET stock_quantity='" +
-                            (res[id].stock_quantity - answer.quant) + "' WHERE product_name='" +
+                            remainingStock + "' WHERE product_name='" +
                             product + "'",
                             function (err, res2) {
                                 console.log("Product Bought!");
-                                makeTable();
+                                createTable();
                             })
                     } else {
                         console.log("Not a valid selection!");
